@@ -24,7 +24,7 @@ public class HelloServlet extends HttpServlet {
 
 	@Override
 	public void init() throws ServletException {
-		SparkConf conf = new SparkConf().setAppName("NameCounter").setMaster("local");
+		SparkConf conf = new SparkConf().setAppName("NameCounter").setMaster("local[4]");
 		sparkContext = new JavaSparkContext(conf);
 
 		names = new ArrayList<>();
@@ -91,7 +91,7 @@ public class HelloServlet extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		JavaRDD<String> namesRDD = sparkContext.parallelize(names);
+		JavaRDD<String> namesRDD = sparkContext.parallelize(names, 4);
 		JavaPairRDD<String, Integer> namesMapper = namesRDD.mapToPair((f) -> new Tuple2<>(f, 1));
 		System.out.println(namesMapper.collect());
 		JavaPairRDD<String, Integer> countNames = namesMapper.reduceByKey((x, y) -> ((int) x + (int) y));
